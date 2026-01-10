@@ -27,9 +27,10 @@ Copy and paste the following template into your `.env` file, then fill in YOUR a
 # KALSHI CREDENTIALS
 # ============================================
 KALSHI_API_KEY_ID=YOUR_KALSHI_API_KEY_ID_HERE
-# Provide the PEM contents directly.
-# This supports \n escaped newlines:
-KALSHI_PRIVATE_KEY_PEM="-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
+# Base64-encoded PEM contents (single line).
+# Generate on Mac/Linux:
+#   base64 -i kalshiKey.pem | tr -d '\n'
+KALSHI_PRIVATE_KEY_PEM=BASE64_ENCODED_PEM_HERE
 
 # ============================================
 # POLYMARKET CREDENTIALS

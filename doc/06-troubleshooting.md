@@ -98,22 +98,20 @@ Having problems? This guide covers common issues and how to fix them.
 
 ### "KALSHI_PRIVATE_KEY_PEM not set" or "Failed to parse private key PEM"
 
-**Problem:** Kalshi private key PEM is missing or not in the expected format.
+**Problem:** Kalshi private key is missing or not in the expected format.
 
 **Solution:**
 1. **Check `.env` contains the variable:**
    - You should have a line like:
-     - `KALSHI_PRIVATE_KEY_PEM="-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"`
+     - `KALSHI_PRIVATE_KEY_PEM=BASE64_ENCODED_PEM_HERE`
 
-2. **Check the PEM format:**
-   - The value should include:
-     - `-----BEGIN RSA PRIVATE KEY-----`
-     - `-----END RSA PRIVATE KEY-----`
-   - If your `.env` tool can’t store multi-line values, use `\n` between lines.
+2. **Make sure it is base64 of the PEM file (single line):**
+   - On Mac/Linux you can generate it like:
+     - `base64 -i kalshiKey.pem | tr -d '\\n'`
 
 3. **Avoid common formatting issues:**
-   - Don’t accidentally remove dashes in the BEGIN/END lines
-   - Make sure there are no extra characters before/after the PEM
+   - Don’t include spaces or quotes unless your platform requires them
+   - Make sure it’s one long line (no line breaks)
 
 ### "POLY_PRIVATE_KEY not set" or "POLY_FUNDER not set"
 

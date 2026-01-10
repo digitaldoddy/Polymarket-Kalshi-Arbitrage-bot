@@ -54,8 +54,9 @@ Create a `.env` file:
 ```bash
 # === KALSHI CREDENTIALS ===
 KALSHI_API_KEY_ID=your_kalshi_api_key_id
-# Inline PEM contents (supports \n escaped newlines)
-KALSHI_PRIVATE_KEY_PEM="-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
+# Base64-encoded PEM contents (single line)
+# Generate with: base64 -i kalshiKey.pem | tr -d '\n'
+KALSHI_PRIVATE_KEY_PEM=BASE64_ENCODED_PEM_HERE
 
 # === POLYMARKET CREDENTIALS ===
 POLY_PRIVATE_KEY=0xYOUR_WALLET_PRIVATE_KEY

@@ -162,14 +162,21 @@ impl KalshiConfig {
     pub fn from_env() -> Result<Self> {
         dotenvy::dotenv().ok();
         let api_key_id = std::env::var("KALSHI_API_KEY_ID").context("KALSHI_API_KEY_ID not set")?;
-        // Provide the PEM contents directly via env var.
-        // Supports both multiline env vars and single-line values with escaped newlines ("\\n").
-        // Example (escaped newlines):
-        // KALSHI_PRIVATE_KEY_PEM="-----BEGIN RSA PRIVATE KEY-----\\n...\\n-----END RSA PRIVATE KEY-----"
-        let private_key_pem = std::env::var("KALSHI_PRIVATE_KEY_PEM")
+        // KALSHI_PRIVATE_KEY_PEM is expected to be BASE64-encoded PEM text.
+        // This avoids multiline env var issues in many deploy systems.
+        // Example generation (macOS/Linux): base64 -i kalshiKey.pem | tr -d '\n'
+        let private_key_pem_b64 = std::env::var("KALSHI_PRIVATE_KEY_PEM")
             .context("KALSHI_PRIVATE_KEY_PEM not set")?
-            .replace("\\r\\n", "\\n")
-            .replace("\\n", "\n")
+            .trim()
+            .to_owned();
+
+        let private_key_pem_bytes = BASE64
+            .decode(private_key_pem_b64.as_bytes())
+            .context("Failed to base64-decode KALSHI_PRIVATE_KEY_PEM")?;
+
+        let private_key_pem = String::from_utf8(private_key_pem_bytes)
+            .context("KALSHI_PRIVATE_KEY_PEM decoded bytes were not valid UTF-8")?
+            .replace("\r\n", "\n")
             .trim()
             .to_owned();
         let private_key = RsaPrivateKey::from_pkcs1_pem(&private_key_pem)
