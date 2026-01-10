@@ -96,30 +96,24 @@ Having problems? This guide covers common issues and how to fix them.
    ```
    Not just `cargo run --release`!
 
-### "Failed to read private key from..."
+### "KALSHI_PRIVATE_KEY_PEM not set" or "Failed to parse private key PEM"
 
-**Problem:** Can't find or read the Kalshi private key file.
+**Problem:** Kalshi private key PEM is missing or not in the expected format.
 
 **Solution:**
-1. **Check the file exists:**
-   ```bash
-   ls -la kalshi_private_key.pem  # Mac/Linux
-   dir kalshi_private_key.pem  # Windows
-   ```
+1. **Check `.env` contains the variable:**
+   - You should have a line like:
+     - `KALSHI_PRIVATE_KEY_PEM="-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"`
 
-2. **Check the path in `.env`:**
-   - If file is in same folder as `.env`, use: `KALSHI_PRIVATE_KEY_PATH=kalshi_private_key.pem`
-   - Or use full path: `KALSHI_PRIVATE_KEY_PATH=C:/full/path/to/file.pem`
+2. **Check the PEM format:**
+   - The value should include:
+     - `-----BEGIN RSA PRIVATE KEY-----`
+     - `-----END RSA PRIVATE KEY-----`
+   - If your `.env` tool can’t store multi-line values, use `\n` between lines.
 
-3. **Check file permissions (Mac/Linux):**
-   ```bash
-   chmod 600 kalshi_private_key.pem
-   ```
-
-4. **Check file format:**
-   - File should be a `.pem` file from Kalshi
-   - Open it in text editor - should start with `-----BEGIN RSA PRIVATE KEY-----`
-   - Make sure it's not corrupted
+3. **Avoid common formatting issues:**
+   - Don’t accidentally remove dashes in the BEGIN/END lines
+   - Make sure there are no extra characters before/after the PEM
 
 ### "POLY_PRIVATE_KEY not set" or "POLY_FUNDER not set"
 

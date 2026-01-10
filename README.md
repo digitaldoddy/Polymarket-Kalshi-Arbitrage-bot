@@ -54,7 +54,8 @@ Create a `.env` file:
 ```bash
 # === KALSHI CREDENTIALS ===
 KALSHI_API_KEY_ID=your_kalshi_api_key_id
-KALSHI_PRIVATE_KEY_PATH=/path/to/kalshi_private_key.pem
+# Inline PEM contents (supports \n escaped newlines)
+KALSHI_PRIVATE_KEY_PEM="-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
 
 # === POLYMARKET CREDENTIALS ===
 POLY_PRIVATE_KEY=0xYOUR_WALLET_PRIVATE_KEY
@@ -115,7 +116,7 @@ DRY_RUN=0 dotenvx run -- cargo run --release
 | Variable | Description |
 |----------|-------------|
 | `KALSHI_API_KEY_ID` | Your Kalshi API key ID |
-| `KALSHI_PRIVATE_KEY_PATH` | Path to RSA private key (PEM format) for Kalshi API signing |
+| `KALSHI_PRIVATE_KEY_PEM` | RSA private key PEM contents (inline, PEM format; supports `\n` escaped newlines) |
 | `POLY_PRIVATE_KEY` | Ethereum private key (with 0x prefix) for Polymarket wallet |
 | `POLY_FUNDER` | Your Polymarket wallet address (with 0x prefix) |
 

@@ -27,7 +27,9 @@ Copy and paste the following template into your `.env` file, then fill in YOUR a
 # KALSHI CREDENTIALS
 # ============================================
 KALSHI_API_KEY_ID=YOUR_KALSHI_API_KEY_ID_HERE
-KALSHI_PRIVATE_KEY_PATH=C:/full/path/to/kalshi_private_key.pem
+# Provide the PEM contents directly.
+# This supports \n escaped newlines:
+KALSHI_PRIVATE_KEY_PEM="-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
 
 # ============================================
 # POLYMARKET CREDENTIALS
@@ -69,15 +71,10 @@ CB_COOLDOWN_SECS=300
    - Example: `KALSHI_API_KEY_ID=AKIAIOSFODNN7EXAMPLE`
    - No spaces around the `=` sign!
 
-2. **KALSHI_PRIVATE_KEY_PATH:**
-   - Replace with the full path to your `.pem` file
-   - **Windows examples:**
-     - `KALSHI_PRIVATE_KEY_PATH=C:\Users\John\Desktop\prediction-market-arbitrage\kalshi_private_key.pem`
-     - Or: `KALSHI_PRIVATE_KEY_PATH=C:/Users/John/Desktop/prediction-market-arbitrage/kalshi_private_key.pem`
-   - **Mac/Linux examples:**
-     - `KALSHI_PRIVATE_KEY_PATH=/Users/john/Desktop/prediction-market-arbitrage/kalshi_private_key.pem`
-   - **Tip:** You can also just put the filename if the file is in the same folder as `.env`:
-     - `KALSHI_PRIVATE_KEY_PATH=kalshi_private_key.pem`
+2. **KALSHI_PRIVATE_KEY_PEM:**
+    - Paste the full private key PEM into this env var.
+    - This is useful in container deployments or hosted environments.
+    - If your env file/tool can’t store multi-line values, use `\\n` between lines.
 
 ### Polymarket Credentials
 
@@ -178,7 +175,7 @@ Here's what a complete `.env` file might look like (with fake values):
 ```bash
 # Kalshi
 KALSHI_API_KEY_ID=AKIAIOSFODNN7EXAMPLE12345
-KALSHI_PRIVATE_KEY_PATH=kalshi_private_key.pem
+KALSHI_PRIVATE_KEY_PEM="-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
 
 # Polymarket
 POLY_PRIVATE_KEY=0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
