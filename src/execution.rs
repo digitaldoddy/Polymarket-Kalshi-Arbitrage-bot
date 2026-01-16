@@ -168,11 +168,13 @@ impl ExecutionEngine {
 
         let latency_to_exec = self.clock.now_ns() - req.detected_ns;
         info!(
-            "[EXEC] 🎯 {} | {:?} y={}¢ n={}¢ | profit={}¢ | {}x | {}µs",
+            "[EXEC] 🎯 {} | {:?} y={}¢ n={}¢ | y_size={} n_size={} | profit={}¢ | {}x | {}µs",
             pair.description,
             req.arb_type,
             req.yes_price,
             req.no_price,
+            req.yes_size,
+            req.no_size,
             profit_cents,
             max_contracts,
             latency_to_exec / 1000
@@ -202,6 +204,11 @@ impl ExecutionEngine {
                 let matched = yes_filled.min(no_filled);
                 let success = matched > 0;
                 let actual_profit = matched as i16 * 100 - (yes_cost + no_cost) as i16;
+                
+                info!(
+                    "[EXEC] fills: yes_filled={} no_filled={} matched={} success={}",
+                    yes_filled, no_filled, matched, success
+                );
 
                 // === Automatic exposure management for mismatched fills ===
                 // If one leg fills more than the other, automatically close the excess

@@ -17,9 +17,5 @@ RUN cargo build --release --bin prediction-market-arbitrage
 FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends iputils-ping ca-certificates \
-  && rm -rf /var/lib/apt/lists/*
-
 COPY --from=builder /app/target/release/prediction-market-arbitrage /usr/local/bin
 ENTRYPOINT ["/usr/local/bin/prediction-market-arbitrage"]
