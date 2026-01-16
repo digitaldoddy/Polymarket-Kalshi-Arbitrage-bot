@@ -1,5 +1,4 @@
 FROM lukemathwalker/cargo-chef:latest-rust-1 AS chef
-FROM node:20-alpine
 WORKDIR /app
 
 FROM chef AS planner
@@ -15,8 +14,12 @@ COPY . .
 RUN cargo build --release --bin prediction-market-arbitrage
 
 # We do not need the Rust toolchain to run the binary!
-#FROM debian:bookworm-slim AS runtime
-FROM node:20-alpine AS runtime
+FROM debian:bookworm-slim AS runtime
 WORKDIR /app
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends iputils-ping ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /app/target/release/prediction-market-arbitrage /usr/local/bin
 ENTRYPOINT ["/usr/local/bin/prediction-market-arbitrage"]
