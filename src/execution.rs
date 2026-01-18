@@ -204,7 +204,7 @@ impl ExecutionEngine {
                 let matched = yes_filled.min(no_filled);
                 let success = matched > 0;
                 let actual_profit = matched as i16 * 100 - (yes_cost + no_cost) as i16;
-                
+
                 info!(
                     "[EXEC] fills: yes_filled={} no_filled={} matched={} success={}",
                     yes_filled, no_filled, matched, success
@@ -314,6 +314,8 @@ impl ExecutionEngine {
                     contracts as f64,
                 );
                 let (kalshi_res, poly_res) = tokio::join!(kalshi_fut, poly_fut);
+                info!("[EXEC] Poly result: {:?}", poly_res);
+                info!("[EXEC] Kalshi result: {:?}", kalshi_res);
                 self.extract_cross_results(kalshi_res, poly_res)
             }
 
@@ -331,6 +333,8 @@ impl ExecutionEngine {
                     contracts as f64,
                 );
                 let (kalshi_res, poly_res) = tokio::join!(kalshi_fut, poly_fut);
+                info!("[EXEC] Poly result: {:?}", poly_res);
+                info!("[EXEC] Kalshi result: {:?}", kalshi_res);
                 self.extract_cross_results(kalshi_res, poly_res)
             }
 
