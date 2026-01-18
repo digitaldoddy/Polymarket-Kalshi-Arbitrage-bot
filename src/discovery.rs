@@ -341,6 +341,10 @@ impl DiscoveryClient {
         market_type: MarketType,
         cache: Option<&DiscoveryCache>,
     ) -> Result<Vec<MarketPair>> {
+        let debug_league = config.league_code == "nhl"
+            || config.league_code == "nfl"
+            || config.league_code == "nba";
+
         // Fetch Kalshi events
         {
             let _permit = self.kalshi_semaphore.acquire().await.map_err(|e| anyhow::anyhow!("semaphore closed: {}", e))?;
@@ -354,12 +358,21 @@ impl DiscoveryClient {
         let semaphore = self.kalshi_semaphore.clone();
 
         // Parse events first, filtering out unparseable ones
-        let parsed_events: Vec<_> = events.into_iter()
+        let parsed_events: Vec<_> = events
+            .into_iter()
             .filter_map(|event| {
                 let parsed = match parse_kalshi_event_ticker(&event.event_ticker) {
                     Some(p) => p,
                     None => {
-                        warn!("  ⚠️ Could not parse event ticker {}", event.event_ticker);
+                        if debug_league {
+                            warn!(
+                                "[DISCOVERY] {} parse_fail series={} type={:?} event_ticker={}",
+                                config.league_code,
+                                series,
+                                market_type,
+                                event.event_ticker
+                            );
+                        }
                         return None;
                     }
                 };
@@ -412,6 +425,21 @@ impl DiscoveryClient {
             .into_iter()
             .map(|(parsed, event, market)| {
                 let poly_slug = self.build_poly_slug(config.poly_prefix, &parsed, market_type, &market);
+
+                if debug_league {
+                    info!(
+                        "[DISCOVERY] {} candidate series={} type={:?} event_ticker={} market_ticker={} parsed_date={} teams={} vs {} slug={}",
+                        config.league_code,
+                        series,
+                        market_type,
+                        event.event_ticker,
+                        market.ticker,
+                        parsed.date,
+                        parsed.team1,
+                        parsed.team2,
+                        poly_slug
+                    );
+                }
                 
                 GammaLookupTask {
                     event,
@@ -447,7 +475,19 @@ impl DiscoveryClient {
                                 team_suffix: team_suffix.map(|s| s.into()),
                             })
                         }
-                        Ok(None) => None,
+                        Ok(None) => {
+                            if task.league.as_str() == "nhl" || task.league.as_str() == "nfl" {
+                                warn!(
+                                    "[DISCOVERY] {} gamma_miss type={:?} event_ticker={} market_ticker={} slug={}",
+                                    task.league,
+                                    task.market_type,
+                                    task.event.event_ticker,
+                                    task.market.ticker,
+                                    task.poly_slug
+                                );
+                            }
+                            None
+                        }
                         Err(e) => {
                             warn!("  ⚠️ Gamma lookup failed for {}: {}", task.poly_slug, e);
                             None
