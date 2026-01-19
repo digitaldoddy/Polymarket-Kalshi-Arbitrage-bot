@@ -22,6 +22,9 @@ use crate::types::{MarketPair, MarketType, DiscoveryResult, KalshiMarket, Kalshi
 /// Max concurrent Gamma API requests
 const GAMMA_CONCURRENCY: usize = 20;
 
+/// Gamma rate limit (req/sec). Gamma will 429 if we burst; keep conservative.
+const GAMMA_RATE_LIMIT_PER_SEC: u32 = 5;
+
 /// Kalshi rate limit: 2 requests per second (very conservative - they rate limit aggressively)
 /// Must be conservative because discovery runs many leagues/series in parallel
 const KALSHI_RATE_LIMIT_PER_SEC: u32 = 2;
@@ -47,6 +50,9 @@ struct GammaLookupTask {
 
 /// Type alias for Kalshi rate limiter
 type KalshiRateLimiter = RateLimiter<NotKeyed, governor::state::InMemoryState, DefaultClock, NoOpMiddleware>;
+
+/// Type alias for Gamma rate limiter
+type GammaRateLimiter = RateLimiter<NotKeyed, governor::state::InMemoryState, DefaultClock, NoOpMiddleware>;
 
 /// Persistent cache for discovered market pairs
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -100,6 +106,7 @@ pub struct DiscoveryClient {
     kalshi_limiter: Arc<KalshiRateLimiter>,
     kalshi_semaphore: Arc<Semaphore>,  // Global concurrency limit for Kalshi
     gamma_semaphore: Arc<Semaphore>,
+    gamma_limiter: Arc<GammaRateLimiter>,
 }
 
 impl DiscoveryClient {
@@ -108,6 +115,10 @@ impl DiscoveryClient {
         let quota = Quota::per_second(NonZeroU32::new(KALSHI_RATE_LIMIT_PER_SEC).unwrap());
         let kalshi_limiter = Arc::new(RateLimiter::direct(quota));
 
+        // Create token bucket rate limiter for Gamma
+        let gamma_quota = Quota::per_second(NonZeroU32::new(GAMMA_RATE_LIMIT_PER_SEC).unwrap());
+        let gamma_limiter = Arc::new(RateLimiter::direct(gamma_quota));
+
         Self {
             kalshi: Arc::new(kalshi),
             gamma: Arc::new(GammaClient::new()),
@@ -115,6 +126,7 @@ impl DiscoveryClient {
             kalshi_limiter,
             kalshi_semaphore: Arc::new(Semaphore::new(KALSHI_GLOBAL_CONCURRENCY)),
             gamma_semaphore: Arc::new(Semaphore::new(GAMMA_CONCURRENCY)),
+            gamma_limiter,
         }
     }
 
@@ -449,8 +461,10 @@ impl DiscoveryClient {
             .map(|task| {
                 let gamma = self.gamma.clone();
                 let semaphore = self.gamma_semaphore.clone();
+                let gamma_limiter = self.gamma_limiter.clone();
                 async move {
                     let _permit = semaphore.acquire().await.ok()?;
+                    gamma_limiter.until_ready().await;
                     match gamma.lookup_market(&task.poly_slug).await {
                         Ok(Some((yes_token, no_token))) => {
                             let team_suffix = extract_team_suffix(&task.market.ticker);
