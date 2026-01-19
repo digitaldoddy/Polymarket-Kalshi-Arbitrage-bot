@@ -476,7 +476,7 @@ impl DiscoveryClient {
                             })
                         }
                         Ok(None) => {
-                            if task.league.as_str() == "nhl" || task.league.as_str() == "nfl" {
+                            if task.league.as_str() == "nhl" || task.league.as_str() == "nfl" || task.league.as_str() == "nba" {
                                 warn!(
                                     "[DISCOVERY] {} gamma_miss type={:?} event_ticker={} market_ticker={} slug={}",
                                     task.league,
@@ -531,10 +531,11 @@ impl DiscoveryClient {
                     if suffix.to_lowercase() == "tie" {
                         format!("{}-draw", base)
                     } else {
-                        let poly_suffix = self.team_cache
-                            .kalshi_to_poly(poly_prefix, &suffix)
-                            .unwrap_or_else(|| suffix.to_lowercase());
-                        format!("{}-{}", base, poly_suffix)
+                        // let poly_suffix = self.team_cache
+                        //     .kalshi_to_poly(poly_prefix, &suffix)
+                        //     .unwrap_or_else(|| suffix.to_lowercase());
+                        // format!("{}-{}", base, poly_suffix)
+                        base
                     }
                 } else {
                     base
