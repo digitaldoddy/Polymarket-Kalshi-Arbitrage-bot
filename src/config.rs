@@ -57,14 +57,14 @@ pub struct LeagueConfig {
 pub fn get_league_configs() -> Vec<LeagueConfig> {
     vec![
         // Major European leagues (full market types)
-        // LeagueConfig {
-        //     league_code: "epl",
-        //     poly_prefix: "epl",
-        //     kalshi_series_game: "KXEPLGAME",
-        //     kalshi_series_spread: Some("KXEPLSPREAD"),
-        //     kalshi_series_total: Some("KXEPLTOTAL"),
-        //     kalshi_series_btts: Some("KXEPLBTTS"),
-        // },
+        LeagueConfig {
+            league_code: "epl",
+            poly_prefix: "epl",
+            kalshi_series_game: "KXEPLGAME",
+            kalshi_series_spread: Some("KXEPLSPREAD"),
+            kalshi_series_total: Some("KXEPLTOTAL"),
+            kalshi_series_btts: Some("KXEPLBTTS"),
+        },
         // LeagueConfig {
         //     league_code: "bundesliga",
         //     poly_prefix: "bun",
@@ -97,14 +97,14 @@ pub fn get_league_configs() -> Vec<LeagueConfig> {
         //     kalshi_series_total: Some("KXLIGUE1TOTAL"),
         //     kalshi_series_btts: Some("KXLIGUE1BTTS"),
         // },
-        // LeagueConfig {
-        //     league_code: "ucl",
-        //     poly_prefix: "ucl",
-        //     kalshi_series_game: "KXUCLGAME",
-        //     kalshi_series_spread: Some("KXUCLSPREAD"),
-        //     kalshi_series_total: Some("KXUCLTOTAL"),
-        //     kalshi_series_btts: Some("KXUCLBTTS"),
-        // },
+        LeagueConfig {
+            league_code: "ucl",
+            poly_prefix: "ucl",
+            kalshi_series_game: "KXUCLGAME",
+            kalshi_series_spread: Some("KXUCLSPREAD"),
+            kalshi_series_total: Some("KXUCLTOTAL"),
+            kalshi_series_btts: Some("KXUCLBTTS"),
+        },
         // Secondary European leagues (moneyline only)
         // LeagueConfig {
         //     league_code: "uel",
