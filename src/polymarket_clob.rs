@@ -501,16 +501,21 @@ impl PolymarketAsyncClient {
     /// Get order by ID 
     pub async fn get_order_async(&self, order_id: &str, creds: &PreparedCreds) -> Result<PolymarketOrderResponse> {
         let path = format!("/data/order/{}", order_id);
+        tracing::info!("path: {}", path);
         let url = format!("{}{}", self.host, path);
+        tracing::info!("url: {}", url);
         let headers = self.build_l2_headers("GET", &path, None, creds)?;
+        tracing::info!("headers built");
 
         let resp = self.http
             .get(&url)
             .headers(headers)
             .send()
             .await?;
+        tracing::info!("response received");
 
         if !resp.status().is_success() {
+            tracing::info!("not success");
             let status = resp.status();
             let body = resp.text().await.unwrap_or_default();
             return Err(anyhow!("get_order failed {}: {}", status, body));
@@ -646,10 +651,13 @@ impl SharedAsyncClient {
         if !status.is_success() {
             return Err(anyhow!("Polymarket order failed {}: {}", status, body_for_log));
         }
+        tracing::info!("after success");
 
         let resp_json: serde_json::Value = serde_json::from_str(&body_text)
             .map_err(|e| anyhow!("Polymarket order JSON decode failed (status={}): {} body={}", status, e, body_for_log))?;
+        tracing::info!("after resp json");
         let order_id = resp_json["orderID"].as_str().unwrap_or("unknown").to_string();
+        tracing::info!("after order id");
 
         // Query fill status
         let order_info = self.inner.get_order_async(&order_id, &self.creds).await?;
