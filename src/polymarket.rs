@@ -98,6 +98,7 @@ impl GammaClient {
         let resp = self.http.get(&url).send().await?;
         
         if !resp.status().is_success() {
+            warn!("Gamma API request failed: {}: {}", resp.status(), slug);
             return Ok(None);
         }
         
