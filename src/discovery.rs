@@ -454,14 +454,6 @@ impl DiscoveryClient {
                     match gamma.lookup_market(&task.poly_slug).await {
                         Ok(Some((yes_token, no_token))) => {
                             let team_suffix = extract_team_suffix(&task.market.ticker);
-                            let (poly_yes_token, poly_no_token) = if task.market_type == MarketType::Moneyline
-                                && !task.poly_slug.to_lowercase().contains("draw")
-                            {
-                                // Requested: for Moneyline (non-draw) slugs, invert the token assignment
-                                (no_token, yes_token)
-                            } else {
-                                (yes_token, no_token)
-                            };
                             Some(MarketPair {
                                 pair_id: format!("{}-{}", task.poly_slug, task.market.ticker).into(),
                                 league: task.league.into(),
@@ -470,8 +462,8 @@ impl DiscoveryClient {
                                 kalshi_event_ticker: task.event.event_ticker.clone().into(),
                                 kalshi_market_ticker: task.market.ticker.into(),
                                 poly_slug: task.poly_slug.into(),
-                                poly_yes_token: poly_yes_token.into(),
-                                poly_no_token: poly_no_token.into(),
+                                poly_yes_token: yes_token.into(),
+                                poly_no_token: no_token.into(),
                                 line_value: task.market.floor_strike,
                                 team_suffix: team_suffix.map(|s| s.into()),
                             })
