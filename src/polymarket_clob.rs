@@ -653,6 +653,20 @@ impl SharedAsyncClient {
 
         // Query fill status
         let order_info = self.inner.get_order_async(&order_id, &self.creds).await?;
+        tracing::info!(
+            "[POLY-ASYNC] order_info id={} status={} side={} price={} matched={} original={} owner={:?} type={:?} maker={:?} token={:?} outcome={:?}",
+            order_info.id,
+            order_info.status,
+            order_info.side,
+            order_info.price,
+            order_info.size_matched,
+            order_info.original_size,
+            order_info.owner,
+            order_info.order_type,
+            order_info.maker_address,
+            order_info.asset_id,
+            order_info.outcome
+        );
         let filled_size: f64 = order_info.size_matched.parse().unwrap_or(0.0);
         let order_price: f64 = order_info.price.parse().unwrap_or(price);
 
