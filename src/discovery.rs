@@ -515,12 +515,12 @@ impl DiscoveryClient {
         
         // Base slug: league-team1-team2-date
         let base = format!("{}-{}-{}-{}", poly_prefix, poly_team1, poly_team2, date_str);
-        info!("BASE SLUG: {}", base);
+        // info!("BASE SLUG: {}", base);
         
         match market_type {
             MarketType::Moneyline => {
                 if let Some(suffix) = extract_team_suffix(&market.ticker) {
-                    info!("SUFFIX FROM KALSHI: {}", suffix);
+                    // info!("SUFFIX FROM KALSHI: {}", suffix);
                     if suffix.to_lowercase() == "tie" {
                         format!("{}-draw", base)
                     } else {
