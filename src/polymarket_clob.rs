@@ -618,13 +618,37 @@ impl SharedAsyncClient {
         // Post order
         let resp = self.inner.post_order_async(body, &self.creds).await?;
 
-        if !resp.status().is_success() {
-            let status = resp.status();
-            let body = resp.text().await.unwrap_or_default();
-            return Err(anyhow!("Polymarket order failed {}: {}", status, body));
+        // Capture status BEFORE consuming the body.
+        let status = resp.status();
+        let body_text = resp.text().await.unwrap_or_default();
+
+        // Always log the raw body (truncated) so JSON decode issues like "null" are debuggable.
+        const POLY_RAW_MAX_CHARS: usize = 8_192;
+        let body_for_log = if body_text.len() > POLY_RAW_MAX_CHARS {
+            format!(
+                "{}...<truncated {} chars>",
+                &body_text[..POLY_RAW_MAX_CHARS],
+                body_text.len() - POLY_RAW_MAX_CHARS
+            )
+        } else {
+            body_text.clone()
+        };
+        tracing::info!(
+            "[POLY-ASYNC] raw_order_resp side={} token_id={} price={:.4} size={:.2} status={} body={}",
+            side,
+            token_id,
+            price,
+            size,
+            status.as_u16(),
+            body_for_log
+        );
+
+        if !status.is_success() {
+            return Err(anyhow!("Polymarket order failed {}: {}", status, body_for_log));
         }
 
-        let resp_json: serde_json::Value = resp.json().await?;
+        let resp_json: serde_json::Value = serde_json::from_str(&body_text)
+            .map_err(|e| anyhow!("Polymarket order JSON decode failed (status={}): {} body={}", status, e, body_for_log))?;
         let order_id = resp_json["orderID"].as_str().unwrap_or("unknown").to_string();
 
         // Query fill status
