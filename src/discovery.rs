@@ -341,9 +341,6 @@ impl DiscoveryClient {
         market_type: MarketType,
         cache: Option<&DiscoveryCache>,
     ) -> Result<Vec<MarketPair>> {
-        let debug_league = config.league_code == "nhl"
-            || config.league_code == "nfl"
-            || config.league_code == "nba";
 
         // Fetch Kalshi events
         {
@@ -364,15 +361,13 @@ impl DiscoveryClient {
                 let parsed = match parse_kalshi_event_ticker(&event.event_ticker) {
                     Some(p) => p,
                     None => {
-                        if debug_league {
-                            warn!(
-                                "[DISCOVERY] {} parse_fail series={} type={:?} event_ticker={}",
-                                config.league_code,
-                                series,
-                                market_type,
-                                event.event_ticker
-                            );
-                        }
+                        warn!(
+                            "[DISCOVERY] {} parse_fail series={} type={:?} event_ticker={}",
+                            config.league_code,
+                            series,
+                            market_type,
+                            event.event_ticker
+                        );
                         return None;
                     }
                 };
@@ -426,20 +421,18 @@ impl DiscoveryClient {
             .map(|(parsed, event, market)| {
                 let poly_slug = self.build_poly_slug(config.poly_prefix, &parsed, market_type, &market);
 
-                if debug_league {
-                    info!(
-                        "[DISCOVERY] {} candidate series={} type={:?} event_ticker={} market_ticker={} parsed_date={} teams={} vs {} slug={}",
-                        config.league_code,
-                        series,
-                        market_type,
-                        event.event_ticker,
-                        market.ticker,
-                        parsed.date,
-                        parsed.team1,
-                        parsed.team2,
-                        poly_slug
-                    );
-                }
+                info!(
+                    "[DISCOVERY] {} candidate series={} type={:?} event_ticker={} market_ticker={} parsed_date={} teams={} vs {} slug={}",
+                    config.league_code,
+                    series,
+                    market_type,
+                    event.event_ticker,
+                    market.ticker,
+                    parsed.date,
+                    parsed.team1,
+                    parsed.team2,
+                    poly_slug
+                );
                 
                 GammaLookupTask {
                     event,
@@ -484,16 +477,14 @@ impl DiscoveryClient {
                             })
                         }
                         Ok(None) => {
-                            if task.league.as_str() == "nhl" || task.league.as_str() == "nfl" || task.league.as_str() == "nba" {
-                                warn!(
-                                    "[DISCOVERY] {} gamma_miss type={:?} event_ticker={} market_ticker={} slug={}",
-                                    task.league,
-                                    task.market_type,
-                                    task.event.event_ticker,
-                                    task.market.ticker,
-                                    task.poly_slug
-                                );
-                            }
+                            warn!(
+                                "[DISCOVERY] {} gamma_miss type={:?} event_ticker={} market_ticker={} slug={}",
+                                task.league,
+                                task.market_type,
+                                task.event.event_ticker,
+                                task.market.ticker,
+                                task.poly_slug
+                            );
                             None
                         }
                         Err(e) => {
@@ -532,18 +523,20 @@ impl DiscoveryClient {
         
         // Base slug: league-team1-team2-date
         let base = format!("{}-{}-{}-{}", poly_prefix, poly_team1, poly_team2, date_str);
+        info!("BASE SLUG: {}", base);
         
         match market_type {
             MarketType::Moneyline => {
                 if let Some(suffix) = extract_team_suffix(&market.ticker) {
+                    info!("SUFFIX FROM KALSHI: {}", suffix);
                     if suffix.to_lowercase() == "tie" {
                         format!("{}-draw", base)
                     } else {
-                        // let poly_suffix = self.team_cache
-                        //     .kalshi_to_poly(poly_prefix, &suffix)
-                        //     .unwrap_or_else(|| suffix.to_lowercase());
-                        // format!("{}-{}", base, poly_suffix)
-                        base
+                        let poly_suffix = self.team_cache
+                            .kalshi_to_poly(poly_prefix, &suffix)
+                            .unwrap_or_else(|| suffix.to_lowercase());
+                        format!("{}-{}", base, poly_suffix)
+                        //base
                     }
                 } else {
                     base
