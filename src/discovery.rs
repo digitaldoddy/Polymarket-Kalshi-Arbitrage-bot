@@ -469,14 +469,14 @@ impl DiscoveryClient {
                             })
                         }
                         Ok(None) => {
-                            // warn!(
-                            //     "[DISCOVERY] {} gamma_miss type={:?} event_ticker={} market_ticker={} slug={}",
-                            //     task.league,
-                            //     task.market_type,
-                            //     task.event.event_ticker,
-                            //     task.market.ticker,
-                            //     task.poly_slug
-                            // );
+                            warn!(
+                                "[DISCOVERY] {} gamma_miss type={:?} event_ticker={} market_ticker={} slug={}",
+                                task.league,
+                                task.market_type,
+                                task.event.event_ticker,
+                                task.market.ticker,
+                                task.poly_slug
+                            );
                             None
                         }
                         Err(e) => {
