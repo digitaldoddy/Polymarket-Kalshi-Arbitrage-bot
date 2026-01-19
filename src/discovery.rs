@@ -535,11 +535,15 @@ impl DiscoveryClient {
                         let poly_suffix = self.team_cache
                             .kalshi_to_poly(poly_prefix, &suffix)
                             .unwrap_or_else(|| suffix.to_lowercase());
-                        format!("{}-{}", base, poly_suffix)
-                        //base
+                        // Only consider the outcome that corresponds to team1.
+                        // If this suffix maps to team2 (or anything else), we skip it.
+                        if poly_suffix != poly_team1 {
+                            return String::new();
+                        }
+                        base
                     }
                 } else {
-                    base
+                    return String::new();
                 }
             }
             MarketType::Spread => {
