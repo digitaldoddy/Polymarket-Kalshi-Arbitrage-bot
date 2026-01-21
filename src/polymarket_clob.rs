@@ -514,14 +514,44 @@ impl PolymarketAsyncClient {
             .await?;
         tracing::info!("response received");
 
-        if !resp.status().is_success() {
-            tracing::info!("not success");
-            let status = resp.status();
-            let body = resp.text().await.unwrap_or_default();
-            return Err(anyhow!("get_order failed {}: {}", status, body));
-        }
+        let status = resp.status();
+    let body_text = resp.text().await.unwrap_or_default();
 
-        Ok(resp.json().await?)
+    const POLY_RAW_MAX_CHARS: usize = 32_768;
+    let body_for_log = if body_text.len() > POLY_RAW_MAX_CHARS {
+        format!(
+            "{}...<truncated {} chars>",
+            &body_text[..POLY_RAW_MAX_CHARS],
+            body_text.len() - POLY_RAW_MAX_CHARS
+        )
+    } else {
+        body_text.clone()
+    };
+
+    tracing::info!(
+        "[POLY-ASYNC] raw_get_order_resp order_id={} status={} body={}",
+        order_id,
+        status.as_u16(),
+        body_for_log
+    );
+
+    if !status.is_success() {
+        return Err(anyhow!("get_order failed {}: {}", status, body_for_log));
+    }
+
+    // This is the case causing your serde error
+    if body_text.trim().is_empty() || body_text.trim() == "null" {
+        return Err(anyhow!(
+            "get_order returned null/empty body (status={}) order_id={}",
+            status,
+            order_id
+        ));
+    }
+
+    let decoded: PolymarketOrderResponse = serde_json::from_str(&body_text)
+        .map_err(|e| anyhow!("get_order JSON decode failed (status={}): {} body={}", status, e, body_for_log))?;
+
+    Ok(decoded)
     }
 
     /// Check neg_risk for token - with caching
